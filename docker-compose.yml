@@ -1,0 +1,48 @@
+version: "3"
+services:
+
+  uam:
+    image:  'uam:latest'
+    build:
+      context: .
+      #dockerfile: ./Docker
+    container_name: uam
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresdb:5433/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=VhrS!fKt@123456
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    networks:
+      - spring-network
+
+  postgresdb:
+    image: 'postgres:13.1-alpine'
+    ports:
+      - 5433:5432
+      #-HOST:CONTAINER
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=VhrS!fKt@123456
+      - POSTGRES_DB=postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - spring-network
+
+volumes:
+  mongodb-vol:
+networks:
+  spring-network:
+    driver: bridge
+
+#working both React and Express
+#docker-compose build
+#docker-compose up
+#docker-compose up -d -build
+#docker network create spring-network

@@ -1,0 +1,173 @@
+# spring.main.web-application-type=none # Disabling web server
+# server:compression:enabled=true   #Supported by Tomcat, jetty, undertow
+server:
+  port: 8383
+  servlet:
+    context-path: /uam
+  http2:
+    enabled: true
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  autoconfigure:
+    exclude:
+      - org.springframework.cloud.aws.autoconfigure.context.ContextInstanceDataAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.context.ContextCredentialsAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.context.ContextRegionProviderAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.context.ContextResourceLoaderAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.context.ContextStackAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.mail.MailSenderAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.cache.ElastiCacheAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.messaging.MessagingAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.jdbc.AmazonRdsDatabaseAutoConfiguration
+      - org.springframework.cloud.aws.autoconfigure.metrics.CloudWatchExportAutoConfiguration
+  servlet:
+    multipart:
+      max-request-size: 10MB
+      max-file-size: 10MB
+  application:
+    name: uam
+  data:
+    mongodb:
+      #uri: mongodb+srv://userprofiles:P!ssO123@uam-cluster-0.conzl.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+      #uri: mongodb://admin:admin@localhost:27017/?retryWrites=true&w=majority
+      uri: mongodb://localhost:27017/userprofiles?retryWrites=true&w=majority
+    database: userprofiles
+  cache:
+    cache-names: uam
+    caffeine:
+      spec=maximumSize=500,expireAfterAccess=600s:
+  cloud:
+    aws:
+      endpoint: http://localhost:4566
+      region:
+        static: ap-south-1
+      credentials:
+        access-key: AKIATHVUOXV2OAOKDN4Q
+        secret-key: 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
+    stack:
+      auto: false
+
+#http://localhost:8181/kyc/v3/api-docs - working
+springdoc:
+  api-docs:
+    path=/uamAPIDocs:   # Not workinng
+  swagger-ui:
+    path=/uamAPIDocs.html:     # Not workinng
+
+application-description: UAM User Maagement
+application-version: UAM - 1.0
+
+logging:
+  #file: logs/application-debug.log
+  #pattern:
+  #  console: "%d %-5level %logger : %msg%n"
+  #  file: "%d %-5level [%thread] %logger : %msg%n"
+  level:
+    root: ERROR
+    org.springframework.web: INFO
+    com.techgaints.plugins.uam.controller: INFO
+    org.hibernate: DEBUG
+    org.springframework.transaction: DEBUG
+    org.springframework.data: DEBUG
+    org.springframework.data.mongodb: DEBUG
+    io.github.resilience4j: DEBUG
+
+security:
+  basic:
+    enabled: true
+
+management:
+  endpoints:
+    enabled-by-default: true # By default all will be enabled, we can access
+  endpoint:
+    info:
+      enabled: true
+#    web:
+#      exposure:
+#        include: "*"
+#      cors:
+#        allowed-origins: "http://localhost:8181/kyc/*"
+#        allowed-methods: "GET,POST"
+
+resilience4j.circuitbreaker:
+  instances:
+    getUser:
+      registerHealthIndicator: true
+      slidingWindowSize: 3
+    createUser:
+      registerHealthIndicator: true
+      slidingWindowSize: 4
+      permittedNumberOfCallsInHalfOpenState: 3
+      slidingWindowType: TIME_BASED
+      minimumNumberOfCalls: 2
+      waitDurationInOpenState: 5s
+      failureRateThreshold: 10
+      eventConsumerBufferSize: 10
+      recordExceptions:
+        - org.springframework.web.client.HttpServerErrorException
+        - org.springframework.dao.DataAccessResourceFailureException
+        - java.io.IOException
+      ignoreExceptions:
+        - java.lang.NullPointerException
+      #recordFailurePredicate: io.github.robwin.exception.RecordFailurePredicate
+      #ignoreException
+
+resilience4j.retry:
+  instances:
+    getUser:
+      maxAttempts: 3
+      waitDuration: 10s
+      enableExponentialBackoff: true
+      exponentialBackoffMultiplier: 2
+      retryExceptions:
+        - org.springframework.web.client.HttpServerErrorException
+        - java.io.IOException
+      ignoreExceptions:
+        - java.lang.NullPointerException
+    createUser:
+      maxAttempts: 3
+      waitDuration: 10s
+      retryExceptions:
+        - org.springframework.web.client.HttpServerErrorException
+        - java.io.IOException
+      ignoreExceptions:
+        - java.lang.NullPointerException
+
+resilience4j.bulkhead:
+  instances:
+    getUser:
+      maxConcurrentCalls: 10
+    createUser:
+      maxWaitDuration: 10ms
+      maxConcurrentCalls: 20
+
+resilience4j.thread-pool-bulkhead:
+  instances:
+    deleteUser:
+      maxThreadPoolSize: 1
+      coreThreadPoolSize: 1
+      queueCapacity: 1
+
+resilience4j.ratelimiter:
+  instances:
+    getUser:
+      limitForPeriod: 10
+      limitRefreshPeriod: 1s
+      timeoutDuration: 0
+      registerHealthIndicator: true
+      eventConsumerBufferSize: 100
+    createUser:
+      limitForPeriod: 6
+      limitRefreshPeriod: 500ms
+      timeoutDuration: 3s
+
+resilience4j.timelimiter:
+  instances:
+    getUser:
+      timeoutDuration: 2s
+      cancelRunningFuture: true
+    createUser:
+      timeoutDuration: 1s
+      cancelRunningFuture: false

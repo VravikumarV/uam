@@ -1,0 +1,76 @@
+---
+apiVersion: "v1"
+kind: "Namespace"
+metadata:
+  creationTimestamp: "2023-04-02T20:17:02Z"
+  labels:
+    kubernetes.io/metadata.name: "development"
+    name: "ckad-ns"
+  managedFields:
+  - apiVersion: "v1"
+    fieldsType: "FieldsV1"
+    fieldsV1:
+      f:status:
+        f:conditions:
+          ".": {}
+          k:{"type":"NamespaceContentRemaining"}:
+            ".": {}
+            f:lastTransitionTime: {}
+            f:message: {}
+            f:reason: {}
+            f:status: {}
+            f:type: {}
+          k:{"type":"NamespaceDeletionContentFailure"}:
+            ".": {}
+            f:lastTransitionTime: {}
+            f:message: {}
+            f:reason: {}
+            f:status: {}
+            f:type: {}
+          k:{"type":"NamespaceDeletionDiscoveryFailure"}:
+            ".": {}
+            f:lastTransitionTime: {}
+            f:message: {}
+            f:reason: {}
+            f:status: {}
+            f:type: {}
+          k:{"type":"NamespaceDeletionGroupVersionParsingFailure"}:
+            ".": {}
+            f:lastTransitionTime: {}
+            f:message: {}
+            f:reason: {}
+            f:status: {}
+            f:type: {}
+          k:{"type":"NamespaceFinalizersRemaining"}:
+            ".": {}
+            f:lastTransitionTime: {}
+            f:message: {}
+            f:reason: {}
+            f:status: {}
+            f:type: {}
+    manager: "kube-controller-manager"
+    operation: "Update"
+    time: "2023-04-02T20:14:58Z"
+    subresource: "status"
+  - apiVersion: "v1"
+    fieldsType: "FieldsV1"
+    fieldsV1:
+      f:metadata:
+        f:deletionTimestamp: {}
+        f:labels:
+          ".": {}
+          f:kubernetes.io/metadata.name: {}
+          f:name: {}
+      f:spec:
+        f:finalizers: {}
+    manager: "okhttp"
+    operation: "Update"
+    time: "2023-04-02T20:17:02Z"
+  name: "development"
+  resourceVersion: "289259"
+  uid: "8dee3ad9-6ae6-44c9-9195-6f79df2818f9"
+spec:
+  finalizers:
+  - "kubernetes"
+status:
+  phase: "Active"

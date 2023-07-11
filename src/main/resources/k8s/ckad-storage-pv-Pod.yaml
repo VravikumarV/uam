@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ckad-storage-pv-pod
+spec:
+  containers:
+    - name: ckad-storage-pv-pod
+      image: nginx
+      resources:
+        limits:
+          memory: "800Mi"
+          cpu: "800m"
+        requests:
+          memory: "600Mi"
+          cpu: "400m"
+      ports:
+        - containerPort: 8080
+          name: www
+      volumeMounts:
+        - name: www-pv-storage
+          mountPath:  /Users/venkataravikumarvemulakonda/Documents/techgaint_workspace/
+  volumes:
+    - name: www-pv-storage
+      persistentVolumeClaim:
+        claimName: my-local-pvc

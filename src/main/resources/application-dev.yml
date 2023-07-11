@@ -1,0 +1,114 @@
+server:
+  port: 8282
+  servlet:
+    context-path: /kyc
+  http2:
+    enabled: true
+
+spring:
+  application:
+    name: uam-kyc
+  servlet:
+    multipart:
+      max-request-size: 10MB
+      max-file-size: 10MB
+  data:
+    mongodb:
+      #uri: mongodb+srv://userprofiles:P!ssO123@uam-cluster-0.conzl.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+      #uri: mongodb://admin:admin@localhost:27017/userprofiles?retryWrites=true&w=majority
+      uri: mongodb://localhost:27017/userprofiles?retryWrites=true&w=majority
+    database: userprofiles
+  cache:
+    cache-names: kyc
+    caffeine:
+      spec=maximumSize=500,expireAfterAccess=600s:
+  cloud:
+    aws:
+      endpoint: http://localhost:4566
+      region:
+        static: ap-south-1
+      credentials:
+        access-key: AKIATHVUOXV2OAOKDN4Q
+        secret-key: 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
+    stack:
+      auto: false
+
+resilience4j.circuitbreaker:
+  instances:
+    getUser:
+      registerHealthIndicator: true
+      slidingWindowSize: 3
+    createUser:
+      registerHealthIndicator: true
+      slidingWindowSize: 4
+      permittedNumberOfCallsInHalfOpenState: 3
+      slidingWindowType: TIME_BASED
+      minimumNumberOfCalls: 2
+      waitDurationInOpenState: 5s
+      failureRateThreshold: 4
+      eventConsumerBufferSize: 10
+      recordExceptions:
+        - org.springframework.web.client.HttpServerErrorException
+        - java.io.IOException
+      ignoreExceptions:
+        - java.lang.NullPointerException
+      #recordFailurePredicate: io.github.robwin.exception.RecordFailurePredicate
+      #ignoreException
+
+resilience4j.retry:
+  instances:
+    getUser:
+      maxAttempts: 3
+      waitDuration: 10s
+      enableExponentialBackoff: true
+      exponentialBackoffMultiplier: 2
+      retryExceptions:
+        - org.springframework.web.client.HttpServerErrorException
+        - java.io.IOException
+      ignoreExceptions:
+        - java.lang.NullPointerException
+    createUser:
+      maxAttempts: 3
+      waitDuration: 10s
+      retryExceptions:
+        - org.springframework.web.client.HttpServerErrorException
+        - java.io.IOException
+      ignoreExceptions:
+        - java.lang.NullPointerException
+
+resilience4j.bulkhead:
+  instances:
+    getUser:
+      maxConcurrentCalls: 10
+    createUser:
+      maxWaitDuration: 10ms
+      maxConcurrentCalls: 20
+
+resilience4j.thread-pool-bulkhead:
+  instances:
+    deleteUser:
+      maxThreadPoolSize: 1
+      coreThreadPoolSize: 1
+      queueCapacity: 1
+
+resilience4j.ratelimiter:
+  instances:
+    getUser:
+      limitForPeriod: 10
+      limitRefreshPeriod: 1s
+      timeoutDuration: 0
+      registerHealthIndicator: true
+      eventConsumerBufferSize: 100
+    createUser:
+      limitForPeriod: 6
+      limitRefreshPeriod: 500ms
+      timeoutDuration: 3s
+
+resilience4j.timelimiter:
+  instances:
+    getUser:
+      timeoutDuration: 2s
+      cancelRunningFuture: true
+    createUser:
+      timeoutDuration: 1s
+      cancelRunningFuture: false
